@@ -1,0 +1,78 @@
+<div class="form-container">
+  <div class="form-header">
+    <h2>✨ Create New Ticket</h2>
+    <button class="close-btn" (click)="onCancel()" title="Close">×</button>
+  </div>
+
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="title">Title *</label>
+      <input
+        type="text"
+        id="title"
+        [value]="title()"
+        (input)="title.set($any($event.target).value)"
+        required
+        placeholder="Enter ticket title"
+        maxlength="255">
+      <small class="char-count">{{ title().length }}/255</small>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description *</label>
+      <textarea
+        id="description"
+        [value]="description()"
+        (input)="description.set($any($event.target).value)"
+        required
+        rows="5"
+        placeholder="Describe the issue or request in detail..."></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="priority">Priority *</label>
+        <select
+          id="priority"
+          [value]="priority()"
+          (change)="priority.set(+$any($event.target).value)">
+          <option *ngFor="let p of priorities" [value]="p">
+            {{ getPriorityLabel(p) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="assignee">Assignee ID *</label>
+        <input
+          type="number"
+          id="assignee"
+          [value]="assigneeId()"
+          (input)="assigneeId.set(+$any($event.target).value)"
+          required
+          min="1"
+          placeholder="Enter user ID">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="tags">Tags (comma separated)</label>
+      <input
+        type="text"
+        id="tags"
+        [value]="tags()"
+        (input)="tags.set($any($event.target).value)"
+        placeholder="e.g. bug, urgent, frontend">
+      <small class="help-text">Separate tags with commas</small>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary">
+        Create Ticket
+      </button>
+    </div>
+  </form>
+</div>

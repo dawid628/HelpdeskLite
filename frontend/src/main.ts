@@ -1,9 +1,9 @@
 import 'zone.js';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
-import { TestComponent } from './app/components/test/test.component';
+import {TicketListComponent} from './app/components/ticket-list/ticket-list.component';
 
-bootstrapApplication(TestComponent, {
+bootstrapApplication(TicketListComponent, {
   providers: [
     provideHttpClient()
   ]

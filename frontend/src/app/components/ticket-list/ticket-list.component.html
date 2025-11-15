@@ -1,0 +1,114 @@
+<div class="ticket-list-container">
+  <header class="header">
+    <h1>Ticket Management System</h1>
+    <button class="btn btn-primary" (click)="toggleForm()">
+      {{ showForm() ? 'Cancel' : 'Create New Ticket' }}
+    </button>
+  </header>
+
+  <!-- Error message -->
+  <div class="error" *ngIf="ticketService.error()">
+    <p>❌ {{ ticketService.error() }}</p>
+  </div>
+
+  <!-- Create form -->
+  <app-ticket-form
+    *ngIf="showForm()"
+    (close)="onFormClose()">
+  </app-ticket-form>
+
+  <!-- Filters -->
+  <div class="filters-container">
+    <div class="filter-section">
+      <h3>Status</h3>
+      <div class="filters">
+        <button
+          class="filter-btn"
+          [class.active]="filterStatus() === null"
+          (click)="setStatusFilter(null)">
+          All
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filterStatus() === StatusEnum.OPEN"
+          (click)="setStatusFilter(StatusEnum.OPEN)">
+          Open
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filterStatus() === StatusEnum.IN_PROGRESS"
+          (click)="setStatusFilter(StatusEnum.IN_PROGRESS)">
+          In Progress
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filterStatus() === StatusEnum.CLOSED"
+          (click)="setStatusFilter(StatusEnum.CLOSED)">
+          Closed
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h3>Priority</h3>
+      <div class="filters">
+        <button
+          class="filter-btn"
+          [class.active]="filterPriority() === null"
+          (click)="setPriorityFilter(null)">
+          All
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filterPriority() === PriorityEnum.LOW"
+          (click)="setPriorityFilter(PriorityEnum.LOW)">
+          Low
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filterPriority() === PriorityEnum.MEDIUM"
+          (click)="setPriorityFilter(PriorityEnum.MEDIUM)">
+          Medium
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filterPriority() === PriorityEnum.HIGH"
+          (click)="setPriorityFilter(PriorityEnum.HIGH)">
+          High
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="filterPriority() === PriorityEnum.CRITICAL"
+          (click)="setPriorityFilter(PriorityEnum.CRITICAL)">
+          Critical
+        </button>
+      </div>
+    </div>
+
+    <button
+      class="btn btn-secondary clear-filters-btn"
+      *ngIf="filterStatus() !== null || filterPriority() !== null"
+      (click)="clearFilters()">
+      Clear Filters
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading" *ngIf="ticketService.loading()">
+    <div class="spinner"></div>
+    <p>Loading tickets...</p>
+  </div>
+
+  <!-- Tickets list -->
+  <div class="tickets-grid" *ngIf="!ticketService.loading()">
+    <app-ticket-item
+      *ngFor="let ticket of filteredTickets()"
+      [ticket]="ticket">
+    </app-ticket-item>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!ticketService.loading() && filteredTickets().length === 0">
+    <p>📭 No tickets found</p>
+  </div>
+</div>

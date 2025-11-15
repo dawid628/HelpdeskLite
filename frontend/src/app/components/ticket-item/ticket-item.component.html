@@ -1,0 +1,46 @@
+<div class="ticket-card">
+  <div class="ticket-header">
+    <h3 class="ticket-title">{{ ticket.title }}</h3>
+    <div class="header-actions">
+      <span
+        class="priority-badge">
+<!--        [style.background-color]='#03fc5a'>-->
+        {{ getPriorityLabel(ticket.priority) }}
+      </span>
+      <button class="delete-btn" (click)="deleteTicket()" title="Delete ticket">×</button>
+    </div>
+  </div>
+
+  <p class="ticket-description">{{ ticket.description }}</p>
+
+  <div class="ticket-meta">
+    <div class="meta-item">
+      <span class="meta-label">👤 Assignee:</span>
+      <span class="meta-value">{{ ticket.assignee?.name || 'Unassigned' }}</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">📝 Reporter:</span>
+      <span class="meta-value">{{ ticket.reporter?.name || 'Unknown' }}</span>
+    </div>
+  </div>
+
+  <div class="ticket-tags" *ngIf="ticket.tags && ticket.tags.length > 0">
+    <span class="tag" *ngFor="let tag of ticket.tags">#{{ tag }}</span>
+  </div>
+
+  <div class="ticket-footer">
+    <div class="status-section">
+      <span class="status-label">Status:</span>
+      <select
+        class="status-select"
+        [value]="ticket.status"
+        (change)="changeStatus(+$any($event.target).value)">
+<!--        [style.background-color]="getStatusColor(ticket.status)">-->
+        <option [value]="StatusEnum.OPEN">{{ getStatusLabel(StatusEnum.OPEN) }}</option>
+        <option [value]="StatusEnum.IN_PROGRESS">{{ getStatusLabel(StatusEnum.IN_PROGRESS) }}</option>
+        <option [value]="StatusEnum.CLOSED">{{ getStatusLabel(StatusEnum.CLOSED) }}</option>
+      </select>
+    </div>
+    <span class="ticket-date">📅 {{ ticket.created_at | date:'short' }}</span>
+  </div>
+</div>
