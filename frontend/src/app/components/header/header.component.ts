@@ -3,9 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
-/**
- * Header component with authentication status and logout
- */
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -19,9 +16,6 @@ export class HeaderComponent {
     private router: Router
   ) {}
 
-  /**
-   * Get user initials for avatar
-   */
   getUserInitials(): string {
     const name = this.authService.currentUser()?.name || '';
     const parts = name.split(' ');
@@ -31,34 +25,22 @@ export class HeaderComponent {
     return name.substring(0, 2).toUpperCase();
   }
 
-  /**
-   * Get user role name
-   */
   getUserRole(): string {
     const role = this.authService.currentUser()?.role;
     return role?.name || 'User';
   }
 
-  /**
-   * Logout user
-   */
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 
-  /**
-   * Navigate to login
-   */
   goToLogin(): void {
     this.router.navigate(['/login']);
   }
 
-  /**
-   * Navigate to tickets
-   */
   goToTickets(): void {
-    if (this.authService.isAuthenticated()) {
+    if (this.authService.hasToken()) {
       this.router.navigate(['/tickets']);
     }
   }

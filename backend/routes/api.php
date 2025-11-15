@@ -15,18 +15,15 @@ Route::get('/test', function (Request $request) {
     ]);
 });
 
-Route::middleware(['auth:sanctum'])->prefix('tickets')->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
-    Route::get('/', [TicketController::class, 'index'])->name('tickets.index');
-    Route::get('/{id}', [TicketController::class, 'show'])->name('tickets.show');
-    Route::post('/', [TicketController::class, 'store'])->name('tickets.store');
-    Route::patch('/{id}', [TicketController::class, 'update'])->name('tickets.update');
-    Route::delete('/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy');
+    Route::apiResource('tickets', TicketController::class);
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index']);
+        Route::get('/{id}', [UserController::class, 'show']);
         Route::get('/role/{role}', [UserController::class, 'byRole']);
     });
 });

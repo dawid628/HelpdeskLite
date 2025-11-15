@@ -5,7 +5,7 @@
     </div>
 
     <div class="header-right">
-      <div class="user-info" *ngIf="authService.isAuthenticated()">
+      <div class="user-info" *ngIf="authService.currentUser()">
         <div class="user-avatar">
           {{ getUserInitials() }}
         </div>
@@ -17,14 +17,14 @@
 
       <button
         class="btn btn-logout"
-        *ngIf="authService.isAuthenticated()"
+        *ngIf="authService.hasToken()"
         (click)="logout()">
         🚪 Logout
       </button>
 
       <button
         class="btn btn-login"
-        *ngIf="!authService.isAuthenticated()"
+        *ngIf="!authService.hasToken()"
         (click)="goToLogin()">
         🔐 Login
       </button>

@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { User } from '../models/user.model';
 
@@ -13,9 +13,6 @@ interface LoginCredentials {
   password: string;
 }
 
-/**
- * Service for authentication
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -24,39 +21,14 @@ export class AuthService {
   private readonly tokenKey = 'auth_token';
 
   currentUser = signal<User | null>(null);
-  isAuthenticated = signal<boolean>(false);
 
-  constructor(private http: HttpClient) {
-    this.checkAuth();
-  }
+  constructor(private http: HttpClient) {}
 
   /**
-   * Check if user is authenticated on init
+   * Check if user has token
    */
-  private checkAuth(): void {
-    const token = this.getToken();
-    if (token) {
-      this.isAuthenticated.set(true);
-      this.me().subscribe({
-        next: () => {},
-        error: () => {
-          // Token invalid, logout
-          this.logout();
-        }
-      });
-    }
-  }
-
-  /**
-   * Get auth headers
-   */
-  private getHeaders(): HttpHeaders {
-    const token = this.getToken();
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : ''
-    });
+  hasToken(): boolean {
+    return !!this.getToken();
   }
 
   /**
@@ -66,9 +38,8 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials)
       .pipe(
         tap(response => {
-          this.setToken(response.token);
+          localStorage.setItem(this.tokenKey, response.token);
           this.currentUser.set(response.user);
-          this.isAuthenticated.set(true);
         })
       );
   }
@@ -77,58 +48,27 @@ export class AuthService {
    * Logout user
    */
   logout(): void {
-    const token = this.getToken();
-    if (token) {
-      this.http.post(`${this.apiUrl}/logout`, {}, { headers: this.getHeaders() })
-        .subscribe({
-          next: () => {},
-          error: () => {}
-        });
-    }
-
-    this.removeToken();
+    this.http.post(`${this.apiUrl}/logout`, {}).subscribe();
+    localStorage.removeItem(this.tokenKey);
     this.currentUser.set(null);
-    this.isAuthenticated.set(false);
   }
 
   /**
-   * Get current user
+   * Get current user from API
    */
   me(): Observable<{ user: User }> {
-    return this.http.get<{ user: User }>(`${this.apiUrl}/me`, { headers: this.getHeaders() })
+    return this.http.get<{ user: User }>(`${this.apiUrl}/me`)
       .pipe(
         tap(response => {
           this.currentUser.set(response.user);
-          this.isAuthenticated.set(true);
         })
       );
   }
 
   /**
-   * Get token from localStorage
+   * Get token
    */
   getToken(): string | null {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem(this.tokenKey);
-    }
-    return null;
-  }
-
-  /**
-   * Set token to localStorage
-   */
-  private setToken(token: string): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem(this.tokenKey, token);
-    }
-  }
-
-  /**
-   * Remove token from localStorage
-   */
-  private removeToken(): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.removeItem(this.tokenKey);
-    }
+    return localStorage.getItem(this.tokenKey);
   }
 }

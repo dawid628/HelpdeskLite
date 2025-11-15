@@ -1,13 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../header/header.component';
 
-/**
- * Login component
- */
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -15,7 +12,7 @@ import { HeaderComponent } from '../header/header.component';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   email = signal('');
   password = signal('');
   error = signal('');
@@ -25,6 +22,12 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    if (this.authService.hasToken()) {
+      this.router.navigate(['/tickets']);
+    }
+  }
 
   onSubmit(): void {
     this.error.set('');
@@ -40,7 +43,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err.error?.message || 'Login failed. Please check your credentials.');
+        this.error.set(err.error?.message || 'Login failed');
       }
     });
   }

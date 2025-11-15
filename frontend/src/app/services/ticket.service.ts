@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import {
   Ticket,
@@ -7,42 +7,19 @@ import {
   UpdateTicketStatusDto,
   ApiResponse
 } from '../models/ticket.model';
-import { AuthService } from './auth.service';
 
-/**
- * Service for managing tickets via API
- */
 @Injectable({
   providedIn: 'root'
 })
 export class TicketService {
   private readonly apiUrl = 'http://localhost:8000/api/tickets';
 
-  // Signal for reactive tickets list
   tickets = signal<Ticket[]>([]);
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService
-  ) {}
+  constructor(private http: HttpClient) {}
 
-  /**
-   * Get auth headers with token
-   */
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : ''
-    });
-  }
-
-  /**
-   * Get all tickets with optional filters
-   */
   getTickets(filters?: any): Observable<ApiResponse<Ticket[]>> {
     this.loading.set(true);
     this.error.set(null);
@@ -56,10 +33,7 @@ export class TicketService {
       });
     }
 
-    return this.http.get<ApiResponse<Ticket[]>>(this.apiUrl, {
-      headers: this.getHeaders(),
-      params
-    }).pipe(
+    return this.http.get<ApiResponse<Ticket[]>>(this.apiUrl, { params }).pipe(
       tap({
         next: (response) => {
           this.tickets.set(response.data || []);
@@ -73,16 +47,11 @@ export class TicketService {
     );
   }
 
-  /**
-   * Get single ticket
-   */
   getTicket(id: number): Observable<ApiResponse<Ticket>> {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.get<ApiResponse<Ticket>>(`${this.apiUrl}/${id}`, {
-      headers: this.getHeaders()
-    }).pipe(
+    return this.http.get<ApiResponse<Ticket>>(`${this.apiUrl}/${id}`).pipe(
       tap({
         next: () => this.loading.set(false),
         error: (err) => {
@@ -93,16 +62,11 @@ export class TicketService {
     );
   }
 
-  /**
-   * Create new ticket
-   */
   createTicket(ticket: CreateTicketDto): Observable<ApiResponse<Ticket>> {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.post<ApiResponse<Ticket>>(this.apiUrl, ticket, {
-      headers: this.getHeaders()
-    }).pipe(
+    return this.http.post<ApiResponse<Ticket>>(this.apiUrl, ticket).pipe(
       tap({
         next: (response) => {
           if (response.data) {
@@ -118,18 +82,11 @@ export class TicketService {
     );
   }
 
-  /**
-   * Update ticket status
-   */
   updateTicketStatus(id: number, data: UpdateTicketStatusDto): Observable<ApiResponse<Ticket>> {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.patch<ApiResponse<Ticket>>(
-      `${this.apiUrl}/${id}`,
-      data,
-      { headers: this.getHeaders() }
-    ).pipe(
+    return this.http.patch<ApiResponse<Ticket>>(`${this.apiUrl}/${id}`, data).pipe(
       tap({
         next: (response) => {
           if (response.data) {
@@ -147,16 +104,11 @@ export class TicketService {
     );
   }
 
-  /**
-   * Delete ticket
-   */
   deleteTicket(id: number): Observable<any> {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.delete(`${this.apiUrl}/${id}`, {
-      headers: this.getHeaders()
-    }).pipe(
+    return this.http.delete(`${this.apiUrl}/${id}`).pipe(
       tap({
         next: () => {
           this.tickets.update(tickets => tickets.filter(t => t.id !== id));
