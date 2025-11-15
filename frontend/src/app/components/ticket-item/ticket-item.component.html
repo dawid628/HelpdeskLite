@@ -4,10 +4,14 @@
     <div class="header-actions">
       <span
         class="priority-badge">
-<!--        [style.background-color]='#03fc5a'>-->
+<!--        [style.background-color]="getPriorityColor(ticket.priority)">-->
         {{ getPriorityLabel(ticket.priority) }}
       </span>
-      <button class="delete-btn" (click)="deleteTicket()" title="Delete ticket">×</button>
+      <button
+        class="delete-btn"
+        *ngIf="canDeleteTicket()"
+        (click)="deleteTicket()"
+        title="Delete ticket">×</button>
     </div>
   </div>
 
@@ -35,12 +39,18 @@
         class="status-select"
         [value]="ticket.status"
         (change)="changeStatus(+$any($event.target).value)">
-<!--        [style.background-color]="getStatusColor(ticket.status)">-->
+<!--        [style.background-color]="getStatusColor(ticket.status)"-->
+        [disabled]="!canUpdateTicket()">
         <option [value]="StatusEnum.OPEN">{{ getStatusLabel(StatusEnum.OPEN) }}</option>
         <option [value]="StatusEnum.IN_PROGRESS">{{ getStatusLabel(StatusEnum.IN_PROGRESS) }}</option>
         <option [value]="StatusEnum.CLOSED">{{ getStatusLabel(StatusEnum.CLOSED) }}</option>
       </select>
     </div>
     <span class="ticket-date">📅 {{ ticket.created_at | date:'short' }}</span>
+  </div>
+
+  <!-- Permission indicator -->
+  <div class="permission-info" *ngIf="!canUpdateTicket()">
+    <small>👁️ View only</small>
   </div>
 </div>

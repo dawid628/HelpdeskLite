@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
 use App\Services\TicketService;
-use http\Client\Response;
-use HttpResponse;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -69,36 +68,40 @@ class TicketController extends Controller
      * Update ticket status
      *
      * @param UpdateTicketRequest $request
-     * @param int $id
+     * @param string $id
      * @return JsonResponse
      */
-    public function update(UpdateTicketRequest $request, int $id): JsonResponse
+    public function update(UpdateTicketRequest $request, string $id): JsonResponse
     {
-        $ticket = $this->ticketService->updateTicketStatus(
-            $id,
-            $request->validated()
-        );
+        try {
+            $ticket = $this->ticketService->updateTicketStatus((int)$id, $request->validated());
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $ticket
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'data' => $ticket
+            ]);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Ticket not found'], 404);
+        }
     }
 
     /**
      * Delete ticket
+     * Only admins can delete
      *
-     * @param int $id
+     * @param string $id
      * @return JsonResponse
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
         try {
-            $this->ticketService->deleteTicket($id);
+            $this->ticketService->deleteTicket((int)$id);
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Ticket deleted succesfully.'
+                'message' => 'Ticket deleted successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);

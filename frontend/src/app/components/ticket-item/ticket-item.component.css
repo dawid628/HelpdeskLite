@@ -44,7 +44,7 @@
   border-radius: 20px;
   font-size: 12px;
   font-weight: 700;
-  color: white;
+  color: black;
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -170,4 +170,23 @@
   font-size: 12px;
   color: #9ca3af;
   font-weight: 500;
+}
+
+.status-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.permission-info {
+  text-align: center;
+  padding: 8px;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.permission-info small {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
 }

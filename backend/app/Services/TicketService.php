@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\StatusEnum;
 use App\Models\Ticket;
 use App\Repositories\TicketRepository;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,25 +22,33 @@ readonly class TicketService
     ) {}
 
     /**
-     * Get all tickets with relationships
+     * Get all tickets with relationships based on user role
      *
-     * @param array $filters
+     * @param array $filters Optional filters
      * @return Collection
      */
     public function getAllTickets(array $filters = []): Collection
     {
-        return $this->ticketRepository->getAll($filters);
+        $user = Auth::user();
+        return $this->ticketRepository->getAll($user, $filters);
     }
 
     /**
      * Get single ticket
      *
-     * @param int $ticketId
+     * @param int $ticketId Ticket ID
      * @return Ticket
+     * @throws AuthorizationException
      */
     public function getTicket(int $ticketId): Ticket
     {
-        return $this->ticketRepository->findOrFail($ticketId);
+        $ticket = $this->ticketRepository->findOrFail($ticketId);
+
+        if (Auth::user() && !Auth::user()->can('view', $ticket)) {
+            throw new AuthorizationException('You are not authorized to view this ticket');
+        }
+
+        return $ticket;
     }
 
     /**
@@ -61,10 +70,15 @@ readonly class TicketService
      * @param int $ticketId Ticket ID
      * @param array $data Update data
      * @return Ticket
+     * @throws AuthorizationException
      */
     public function updateTicketStatus(int $ticketId, array $data): Ticket
     {
         $ticket = $this->ticketRepository->findOrFail($ticketId);
+
+        if (Auth::user() && !Auth::user()->can('update', $ticket)) {
+            throw new AuthorizationException('You are not authorized to update this ticket');
+        }
 
         $beforeStatus = $ticket->status;
         $afterStatus = StatusEnum::from($data['status']);
@@ -89,10 +103,16 @@ readonly class TicketService
      *
      * @param int $ticketId
      * @return bool
+     * @throws AuthorizationException
      */
     public function deleteTicket(int $ticketId): bool
     {
         $ticket = $this->ticketRepository->findOrFail($ticketId);
+
+        if (Auth::user() && !Auth::user()->can('delete', $ticket)) {
+            throw new AuthorizationException('You are not authorized to delete this ticket');
+        }
+
         return $this->ticketRepository->delete($ticket);
     }
 }

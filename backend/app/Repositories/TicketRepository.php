@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Ticket;
 use App\Models\TicketStatusChange;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -15,12 +16,18 @@ class TicketRepository
     /**
      * Get all tickets with relationships
      *
-     * @param array $filters
+     * @param User|null $user Current authenticated user
+     * @param array $filters Optional filters
      * @return Collection
      */
-    public function getAll(array $filters = []): Collection
+    public function getAll(?User $user = null, array $filters = []): Collection
     {
-        $query = Ticket::with(['assignee', 'reporter', 'statusChanges']);
+        $query = Ticket::with(['assignee.role', 'reporter.role', 'statusChanges.user']);
+
+        if ($user && $user->isReporter()) {
+            $query->where('reporter_id', $user->id);
+        }
+
         if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
         }
@@ -33,16 +40,15 @@ class TicketRepository
             $query->where('assignee_id', $filters['assignee_id']);
         }
 
+        if (isset($filters['reporter_id'])) {
+            $query->where('reporter_id', $filters['reporter_id']);
+        }
+
         if (isset($filters['tags']) && is_array($filters['tags'])) {
             foreach ($filters['tags'] as $tag) {
                 $query->whereJsonContains('tags', $tag);
             }
         }
-
-        // dla konkretnego zglaszajacego
-//        if(isset($filters['reporter_id'])) {
-//
-//        }
 
         return $query->orderBy('created_at', 'desc')->get();
     }
@@ -56,7 +62,7 @@ class TicketRepository
      */
     public function findOrFail(int $id): Ticket
     {
-        return Ticket::with(['assignee', 'reporter', 'statusChanges.user'])
+        return Ticket::with(['assignee.role', 'reporter.role', 'statusChanges.user'])
             ->findOrFail($id);
     }
 
@@ -82,7 +88,7 @@ class TicketRepository
     {
         $ticket->update($data);
 
-        return $ticket->fresh(['assignee', 'reporter', 'statusChanges.user']);
+        return $ticket->fresh(['assignee.role', 'reporter.role', 'statusChanges.user']);
     }
 
     /**
