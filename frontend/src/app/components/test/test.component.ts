@@ -10,7 +10,7 @@ import { ApiService } from '../../services/api.service';
   styleUrls: ['./test.component.css'],
 })
 export class TestComponent {
-  protected readonly title = signal('Testowy komponent');
+  protected readonly title = signal('Testowy komponent test');
   protected apiResult = signal<string>('');
 
   constructor(private api: ApiService) {}
