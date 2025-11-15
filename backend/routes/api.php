@@ -22,7 +22,7 @@ Route::middleware(['auth:sanctum'])->prefix('tickets')->group(function () {
     Route::get('/', [TicketController::class, 'index'])->name('tickets.index');
     Route::get('/{id}', [TicketController::class, 'show'])->name('tickets.show');
     Route::post('/', [TicketController::class, 'store'])->name('tickets.store');
-    Route::put('/{id}', [TicketController::class, 'update'])->name('tickets.update');
+    Route::patch('/{id}', [TicketController::class, 'update'])->name('tickets.update');
     Route::delete('/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy');
 
     Route::prefix('users')->group(function () {
