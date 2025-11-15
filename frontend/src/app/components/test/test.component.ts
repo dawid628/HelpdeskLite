@@ -1,12 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-test',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule],
   templateUrl: './test.component.html',
   styleUrls: ['./test.component.css'],
 })
