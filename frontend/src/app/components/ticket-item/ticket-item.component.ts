@@ -1,11 +1,14 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Ticket } from '../../models/ticket.model';
 import {
   StatusEnum,
   PriorityEnum,
   getStatusLabel,
+  getStatusColor,
   getPriorityLabel,
+  getPriorityColor
 } from '../../models/enums';
 import { TicketService } from '../../services/ticket.service';
 import { AuthService } from '../../services/auth.service';
@@ -16,7 +19,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-ticket-item',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './ticket-item.component.html',
   styleUrls: ['./ticket-item.component.css']
 })
@@ -27,10 +30,17 @@ export class TicketItemComponent {
   protected readonly StatusEnum = StatusEnum;
   protected readonly PriorityEnum = PriorityEnum;
 
+  // Current status model
+  currentStatus: StatusEnum = StatusEnum.OPEN;
+
   constructor(
     private ticketService: TicketService,
     public authService: AuthService
   ) {}
+
+  ngOnInit(): void {
+    this.currentStatus = this.ticket.status;
+  }
 
   /**
    * Get status label
@@ -40,10 +50,24 @@ export class TicketItemComponent {
   }
 
   /**
+   * Get status color
+   */
+  getStatusColor(status: StatusEnum): string {
+    return getStatusColor(status);
+  }
+
+  /**
    * Get priority label
    */
   getPriorityLabel(priority: PriorityEnum): string {
     return getPriorityLabel(priority);
+  }
+
+  /**
+   * Get priority color
+   */
+  getPriorityColor(priority: PriorityEnum): string {
+    return getPriorityColor(priority);
   }
 
   /**
@@ -65,17 +89,22 @@ export class TicketItemComponent {
   }
 
   /**
-   * Change ticket status
+   * Handle status change
    */
-  changeStatus(newStatus: StatusEnum): void {
+  onStatusChange(): void {
     if (!this.canUpdateTicket()) {
       alert('You do not have permission to update tickets');
+      this.currentStatus = this.ticket.status; // Reset to original
       return;
     }
 
-    this.ticketService.updateTicketStatus(this.ticket.id, { status: newStatus }).subscribe({
+    this.ticketService.updateTicketStatus(this.ticket.id, { status: this.currentStatus }).subscribe({
+      next: () => {
+        // Update successful
+      },
       error: (err) => {
         alert(err.error?.error || 'Failed to update ticket status');
+        this.currentStatus = this.ticket.status; // Reset to original
       }
     });
   }

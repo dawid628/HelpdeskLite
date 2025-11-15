@@ -3,8 +3,8 @@
     <h3 class="ticket-title">{{ ticket.title }}</h3>
     <div class="header-actions">
       <span
-        class="priority-badge">
-<!--        [style.background-color]="getPriorityColor(ticket.priority)">-->
+        class="priority-badge"
+        [style.background-color]="getPriorityColor(ticket.priority)">
         {{ getPriorityLabel(ticket.priority) }}
       </span>
       <button
@@ -37,13 +37,13 @@
       <span class="status-label">Status:</span>
       <select
         class="status-select"
-        [value]="ticket.status"
-        (change)="changeStatus(+$any($event.target).value)">
-<!--        [style.background-color]="getStatusColor(ticket.status)"-->
+        [(ngModel)]="currentStatus"
+        (ngModelChange)="onStatusChange()"
+        [style.background-color]="getStatusColor(currentStatus)"
         [disabled]="!canUpdateTicket()">
-        <option [value]="StatusEnum.OPEN">{{ getStatusLabel(StatusEnum.OPEN) }}</option>
-        <option [value]="StatusEnum.IN_PROGRESS">{{ getStatusLabel(StatusEnum.IN_PROGRESS) }}</option>
-        <option [value]="StatusEnum.CLOSED">{{ getStatusLabel(StatusEnum.CLOSED) }}</option>
+        <option [ngValue]="StatusEnum.OPEN">{{ getStatusLabel(StatusEnum.OPEN) }}</option>
+        <option [ngValue]="StatusEnum.IN_PROGRESS">{{ getStatusLabel(StatusEnum.IN_PROGRESS) }}</option>
+        <option [ngValue]="StatusEnum.CLOSED">{{ getStatusLabel(StatusEnum.CLOSED) }}</option>
       </select>
     </div>
     <span class="ticket-date">📅 {{ ticket.created_at | date:'short' }}</span>

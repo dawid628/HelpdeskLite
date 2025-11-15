@@ -34,3 +34,22 @@ export function getStatusLabel(status: StatusEnum): string {
 
   return labels[status];
 }
+
+export function getPriorityColor(priority: PriorityEnum): string {
+  const colors: Record<PriorityEnum, string> = {
+    [PriorityEnum.LOW]: 'gray',
+    [PriorityEnum.MEDIUM]: 'blue',
+    [PriorityEnum.HIGH]: 'orange',
+    [PriorityEnum.CRITICAL]: 'red'
+  };
+  return colors[priority];
+}
+
+export function getStatusColor(status: StatusEnum): string {
+  const colors: Record<StatusEnum, string> = {
+    [StatusEnum.OPEN]: 'blue',
+    [StatusEnum.IN_PROGRESS]: 'orange',
+    [StatusEnum.CLOSED]: 'green'
+  };
+  return colors[status];
+}
