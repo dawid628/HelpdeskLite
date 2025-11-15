@@ -1,8 +1,8 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TicketService } from '../../services/ticket.service';
 import { TicketItemComponent } from '../ticket-item/ticket-item.component';
-import {TicketFormComponent} from '../ticket-form/ticket-form.component';
+import { TicketFormComponent } from '../ticket-form/ticket-form.component';
 import { StatusEnum, PriorityEnum } from '../../models/enums';
 
 /**
@@ -16,7 +16,6 @@ import { StatusEnum, PriorityEnum } from '../../models/enums';
   styleUrls: ['./ticket-list.component.css']
 })
 export class TicketListComponent implements OnInit {
-  // Public signals for template
   showForm = signal(false);
   filterStatus = signal<StatusEnum | null>(null);
   filterPriority = signal<PriorityEnum | null>(null);
@@ -25,24 +24,6 @@ export class TicketListComponent implements OnInit {
   readonly StatusEnum = StatusEnum;
   readonly PriorityEnum = PriorityEnum;
 
-  // Computed filtered tickets
-  filteredTickets = computed(() => {
-    let tickets = this.ticketService.tickets();
-
-    const statusFilter = this.filterStatus();
-    const priorityFilter = this.filterPriority();
-
-    if (statusFilter !== null) {
-      tickets = tickets.filter(t => t.status === statusFilter);
-    }
-
-    if (priorityFilter !== null) {
-      tickets = tickets.filter(t => t.priority === priorityFilter);
-    }
-
-    return tickets;
-  });
-
   constructor(public ticketService: TicketService) {}
 
   ngOnInit(): void {
@@ -50,10 +31,20 @@ export class TicketListComponent implements OnInit {
   }
 
   /**
-   * Load tickets from API
+   * Load tickets from API with current filters
    */
   loadTickets(): void {
-    this.ticketService.getTickets().subscribe();
+    const filters: any = {};
+
+    if (this.filterStatus() !== null) {
+      filters.status = this.filterStatus();
+    }
+
+    if (this.filterPriority() !== null) {
+      filters.priority = this.filterPriority();
+    }
+
+    this.ticketService.getTickets(filters).subscribe();
   }
 
   /**
@@ -68,27 +59,38 @@ export class TicketListComponent implements OnInit {
    */
   onFormClose(): void {
     this.showForm.set(false);
+    this.loadTickets();
   }
 
   /**
-   * Set status filter
+   * Set status filter and reload tickets
    */
   setStatusFilter(status: StatusEnum | null): void {
     this.filterStatus.set(status);
+    this.loadTickets();
   }
 
   /**
-   * Set priority filter
+   * Set priority filter and reload tickets
    */
   setPriorityFilter(priority: PriorityEnum | null): void {
     this.filterPriority.set(priority);
+    this.loadTickets();
   }
 
   /**
-   * Clear all filters
+   * Clear all filters and reload tickets
    */
   clearFilters(): void {
     this.filterStatus.set(null);
     this.filterPriority.set(null);
+    this.loadTickets();
+  }
+
+  /**
+   * Get tickets (no filtering on client side)
+   */
+  get tickets() {
+    return this.ticketService.tickets();
   }
 }

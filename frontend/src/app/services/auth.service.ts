@@ -36,9 +36,13 @@ export class AuthService {
   private checkAuth(): void {
     const token = this.getToken();
     if (token) {
+      this.isAuthenticated.set(true);
       this.me().subscribe({
-        next: () => this.isAuthenticated.set(true),
-        error: () => this.logout()
+        next: () => {},
+        error: () => {
+          // Token invalid, logout
+          this.logout();
+        }
       });
     }
   }
@@ -76,7 +80,10 @@ export class AuthService {
     const token = this.getToken();
     if (token) {
       this.http.post(`${this.apiUrl}/logout`, {}, { headers: this.getHeaders() })
-        .subscribe();
+        .subscribe({
+          next: () => {},
+          error: () => {}
+        });
     }
 
     this.removeToken();
@@ -101,20 +108,27 @@ export class AuthService {
    * Get token from localStorage
    */
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return localStorage.getItem(this.tokenKey);
+    }
+    return null;
   }
 
   /**
    * Set token to localStorage
    */
   private setToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem(this.tokenKey, token);
+    }
   }
 
   /**
    * Remove token from localStorage
    */
   private removeToken(): void {
-    localStorage.removeItem(this.tokenKey);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem(this.tokenKey);
+    }
   }
 }
