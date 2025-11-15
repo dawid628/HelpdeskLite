@@ -7,6 +7,7 @@ import {
   UpdateTicketStatusDto,
   ApiResponse
 } from '../models/ticket.model';
+import {TriageSuggestionResponse} from '../models/triage.model';
 
 @Injectable({
   providedIn: 'root'
@@ -120,5 +121,18 @@ export class TicketService {
         }
       })
     );
+  }
+
+  getTriageSuggestion(id: number): Observable<TriageSuggestionResponse> {
+    return this.http.post<TriageSuggestionResponse>(`${this.apiUrl}/${id}/triage-suggest`, {});
+  }
+
+  applyTriageSuggestion(id: number, suggestion: any): Observable<ApiResponse<Ticket>> {
+    return this.http.patch<ApiResponse<Ticket>>(`${this.apiUrl}/${id}`, {
+      status: suggestion.suggested_status,
+      priority: suggestion.suggested_priority,
+      assignee_id: suggestion.suggested_assignee_id,
+      tags: suggestion.suggested_tags
+    });
   }
 }

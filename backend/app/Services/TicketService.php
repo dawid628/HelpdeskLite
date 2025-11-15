@@ -52,7 +52,7 @@ readonly class TicketService
     }
 
     /**
-     * Create a new ticket with automatic reporter assignment
+     * Create a new ticket
      *
      * @param array $data Ticket data
      * @return Ticket
@@ -65,7 +65,42 @@ readonly class TicketService
     }
 
     /**
-     * Update ticket status and log the change
+     * Update ticket (can update status, priority, assignee, tags)
+     *
+     * @param int $ticketId Ticket ID
+     * @param array $data Update data
+     * @return Ticket
+     * @throws AuthorizationException
+     */
+    public function updateTicket(int $ticketId, array $data): Ticket
+    {
+        $ticket = $this->ticketRepository->findOrFail($ticketId);
+
+        // Check authorization
+        if (Auth::user() && !Auth::user()->can('update', $ticket)) {
+            throw new AuthorizationException('You are not authorized to update this ticket');
+        }
+
+        // Log status change if status is being updated
+        if (isset($data['status'])) {
+            $beforeStatus = $ticket->status;
+            $afterStatus = StatusEnum::from($data['status']);
+
+            if ($beforeStatus !== $afterStatus) {
+                $this->ticketRepository->createStatusChange([
+                    'ticket_id' => $ticketId,
+                    'user_id' => Auth::id(),
+                    'before_status' => $beforeStatus,
+                    'after_status' => $afterStatus,
+                ]);
+            }
+        }
+
+        return $this->ticketRepository->update($ticket, $data);
+    }
+
+    /**
+     * Update ticket status (legacy method, kept for backwards compatibility)
      *
      * @param int $ticketId Ticket ID
      * @param array $data Update data
@@ -74,34 +109,13 @@ readonly class TicketService
      */
     public function updateTicketStatus(int $ticketId, array $data): Ticket
     {
-        $ticket = $this->ticketRepository->findOrFail($ticketId);
-
-        if (Auth::user() && !Auth::user()->can('update', $ticket)) {
-            throw new AuthorizationException('You are not authorized to update this ticket');
-        }
-
-        $beforeStatus = $ticket->status;
-        $afterStatus = StatusEnum::from($data['status']);
-
-        $updatedTicket = $this->ticketRepository->update($ticket, [
-            'status' => $afterStatus
-        ]);
-
-        // Save status change
-        $this->ticketRepository->createStatusChange([
-            'ticket_id' => $ticketId,
-            'user_id' => Auth::id(),
-            'before_status' => $beforeStatus,
-            'after_status' => $afterStatus,
-        ]);
-
-        return $updatedTicket;
+        return $this->updateTicket($ticketId, $data);
     }
 
     /**
      * Delete ticket
      *
-     * @param int $ticketId
+     * @param int $ticketId Ticket ID
      * @return bool
      * @throws AuthorizationException
      */

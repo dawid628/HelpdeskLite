@@ -2,19 +2,18 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\PriorityEnum;
 use App\Enums\StatusEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Request validation for updating ticket status
+ * Request for updating a ticket
  */
 class UpdateTicketRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request
-     *
-     * @return bool
+     * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
@@ -22,40 +21,18 @@ class UpdateTicketRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request
+     * Get the validation rules that apply to the request.
      *
-     * @return array<string, mixed>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'status' => ['required', 'integer', Rule::in(StatusEnum::values())],
-        ];
-    }
-
-    /**
-     * Get custom attributes for validator errors
-     *
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return [
-            'status' => 'ticket status',
-        ];
-    }
-
-    /**
-     * Get custom messages for validator errors
-     *
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'status.required' => 'The ticket status is required.',
-            'status.integer' => 'The ticket status must be a valid integer.',
-            'status.in' => 'The selected status is invalid.',
+            'status' => ['sometimes', 'integer', Rule::in(array_column(StatusEnum::cases(), 'value'))],
+            'priority' => ['sometimes', 'integer', Rule::in(array_column(PriorityEnum::cases(), 'value'))],
+            'assignee_id' => ['sometimes', 'nullable', 'integer', 'exists:users,id'],
+            'tags' => ['sometimes', 'array'],
+            'tags.*' => ['string', 'max:50'],
         ];
     }
 }

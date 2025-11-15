@@ -32,6 +32,16 @@
     <span class="tag" *ngFor="let tag of ticket.tags">#{{ tag }}</span>
   </div>
 
+  <app-triage-suggestion-panel
+    *ngIf="showTriage"
+    [suggestion]="triageSuggestion"
+    [loading]="triageLoading"
+    [error]="triageError"
+    (accept)="acceptTriage($event)"
+    (reject)="rejectTriage()"
+    (close)="closeTriage()">
+  </app-triage-suggestion-panel>
+
   <div class="ticket-footer">
     <div class="status-section">
       <span class="status-label">Status:</span>
@@ -47,6 +57,16 @@
       </select>
     </div>
     <span class="ticket-date">📅 {{ ticket.created_at | date:'short' }}</span>
+  </div>
+
+  <!-- Actions -->
+  <div class="ticket-actions">
+    <button
+      class="btn btn-triage"
+      *ngIf="canUseTriage() && !showTriage"
+      (click)="requestTriage()">
+      🤖 AI Triage
+    </button>
   </div>
 
   <!-- Permission indicator -->

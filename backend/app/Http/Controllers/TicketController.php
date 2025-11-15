@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
+use App\Services\LLMTriageService;
 use App\Services\TicketService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,9 +15,11 @@ class TicketController extends Controller
 {
     /**
      * @param TicketService $ticketService
+     * @param LLMTriageService $triageService
      */
     public function __construct(
-        private readonly TicketService $ticketService
+        private readonly TicketService $ticketService,
+        private readonly LLMTriageService $triageService
     ) {}
 
     /**
@@ -82,7 +86,7 @@ class TicketController extends Controller
             ]);
         } catch (AuthorizationException $e) {
             return response()->json(['error' => $e->getMessage()], 403);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Ticket not found'], 404);
         }
     }
@@ -105,6 +109,32 @@ class TicketController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }
+
+    /**
+     * Get AI-powered triage suggestion for a ticket
+     *
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function triageSuggest(string $id): JsonResponse
+    {
+        try {
+            $ticket = $this->ticketService->getTicket((int)$id);
+
+            $suggestion = $this->triageService->suggestTriage($ticket);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $suggestion->toArray()
+            ]);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Ticket not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to generate triage suggestion'], 500);
         }
     }
 }

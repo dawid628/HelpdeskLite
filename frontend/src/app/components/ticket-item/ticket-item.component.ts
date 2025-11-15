@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Ticket } from '../../models/ticket.model';
+import {TriageSuggestion} from '../../models/triage.model';
 import {
   StatusEnum,
   PriorityEnum,
@@ -12,6 +13,7 @@ import {
 } from '../../models/enums';
 import { TicketService } from '../../services/ticket.service';
 import { AuthService } from '../../services/auth.service';
+import { TriageSuggestionPanelComponent } from '../triage-suggestion-panel/triage-suggestion-panel.component';
 
 /**
  * Component displaying single ticket card
@@ -19,19 +21,22 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-ticket-item',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TriageSuggestionPanelComponent],
   templateUrl: './ticket-item.component.html',
   styleUrls: ['./ticket-item.component.css']
 })
-export class TicketItemComponent {
+export class TicketItemComponent implements OnInit {
   @Input({ required: true }) ticket!: Ticket;
 
-  // Expose enums for template
   protected readonly StatusEnum = StatusEnum;
   protected readonly PriorityEnum = PriorityEnum;
 
-  // Current status model
   currentStatus: StatusEnum = StatusEnum.OPEN;
+
+  showTriage = false;
+  triageSuggestion: TriageSuggestion | null = null;
+  triageLoading = false;
+  triageError: string | null = null;
 
   constructor(
     private ticketService: TicketService,
@@ -42,46 +47,28 @@ export class TicketItemComponent {
     this.currentStatus = this.ticket.status;
   }
 
-  /**
-   * Get status label
-   */
   getStatusLabel(status: StatusEnum): string {
     return getStatusLabel(status);
   }
 
-  /**
-   * Get status color
-   */
   getStatusColor(status: StatusEnum): string {
     return getStatusColor(status);
   }
 
-  /**
-   * Get priority label
-   */
   getPriorityLabel(priority: PriorityEnum): string {
     return getPriorityLabel(priority);
   }
 
-  /**
-   * Get priority color
-   */
   getPriorityColor(priority: PriorityEnum): string {
     return getPriorityColor(priority);
   }
 
-  /**
-   * Check if user can update ticket (admin or agent)
-   */
   canUpdateTicket(): boolean {
     const user = this.authService.currentUser();
     if (!user || !user.role) return false;
     return user.role.name === 'admin' || user.role.name === 'agent';
   }
 
-  /**
-   * Check if user can delete ticket (admin only)
-   */
   canDeleteTicket(): boolean {
     const user = this.authService.currentUser();
     if (!user || !user.role) return false;
@@ -89,29 +76,28 @@ export class TicketItemComponent {
   }
 
   /**
-   * Handle status change
+   * Can use triage assistant (agents and admins)
    */
+  canUseTriage(): boolean {
+    return this.canUpdateTicket();
+  }
+
   onStatusChange(): void {
     if (!this.canUpdateTicket()) {
       alert('You do not have permission to update tickets');
-      this.currentStatus = this.ticket.status; // Reset to original
+      this.currentStatus = this.ticket.status;
       return;
     }
 
     this.ticketService.updateTicketStatus(this.ticket.id, { status: this.currentStatus }).subscribe({
-      next: () => {
-        // Update successful
-      },
+      next: () => {},
       error: (err) => {
         alert(err.error?.error || 'Failed to update ticket status');
-        this.currentStatus = this.ticket.status; // Reset to original
+        this.currentStatus = this.ticket.status;
       }
     });
   }
 
-  /**
-   * Delete ticket with confirmation
-   */
   deleteTicket(): void {
     if (!this.canDeleteTicket()) {
       alert('You do not have permission to delete tickets');
@@ -125,5 +111,60 @@ export class TicketItemComponent {
         }
       });
     }
+  }
+
+  /**
+   * Request AI triage suggestion
+   */
+  requestTriage(): void {
+    this.showTriage = true;
+    this.triageLoading = true;
+    this.triageError = null;
+    this.triageSuggestion = null;
+
+    this.ticketService.getTriageSuggestion(this.ticket.id).subscribe({
+      next: (response) => {
+        this.triageSuggestion = response.data;
+        this.triageLoading = false;
+      },
+      error: (err) => {
+        this.triageError = err.error?.error || 'Failed to get triage suggestion';
+        this.triageLoading = false;
+      }
+    });
+  }
+
+  /**
+   * Accept triage suggestion
+   */
+  acceptTriage(suggestion: TriageSuggestion): void {
+    this.ticketService.applyTriageSuggestion(this.ticket.id, suggestion).subscribe({
+      next: () => {
+        this.showTriage = false;
+        this.triageSuggestion = null;
+        // Reload tickets to see updated data
+        window.location.reload();
+      },
+      error: (err) => {
+        alert(err.error?.error || 'Failed to apply triage suggestion');
+      }
+    });
+  }
+
+  /**
+   * Reject triage suggestion
+   */
+  rejectTriage(): void {
+    this.showTriage = false;
+    this.triageSuggestion = null;
+  }
+
+  /**
+   * Close triage panel
+   */
+  closeTriage(): void {
+    this.showTriage = false;
+    this.triageSuggestion = null;
+    this.triageError = null;
   }
 }

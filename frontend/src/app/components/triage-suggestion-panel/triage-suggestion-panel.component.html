@@ -1,0 +1,75 @@
+<div class="triage-panel" *ngIf="suggestion || loading || error">
+  <div class="panel-header">
+    <div class="header-left">
+      <span class="ai-icon">🤖</span>
+      <h3>AI Triage Suggestion</h3>
+    </div>
+    <button class="close-btn" (click)="onClose()" title="Close">×</button>
+  </div>
+
+  <div class="panel-content" *ngIf="loading">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Analyzing ticket...</p>
+    </div>
+  </div>
+
+  <div class="panel-content" *ngIf="error && !loading">
+    <div class="error-state">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+    </div>
+  </div>
+
+  <div class="panel-content" *ngIf="suggestion && !loading && !error">
+    <div class="suggestion-section">
+      <h4>Suggested Changes</h4>
+
+      <div class="suggestion-grid">
+        <div class="suggestion-item">
+          <span class="label">Priority:</span>
+          <span
+            class="priority-badge"
+            [style.background-color]="getPriorityColor(suggestion.suggested_priority)">
+            {{ getPriorityLabel(suggestion.suggested_priority) }}
+          </span>
+        </div>
+
+        <div class="suggestion-item">
+          <span class="label">Status:</span>
+          <span
+            class="status-badge"
+            [style.background-color]="getStatusColor(suggestion.suggested_status)">
+            {{ getStatusLabel(suggestion.suggested_status) }}
+          </span>
+        </div>
+
+        <div class="suggestion-item" *ngIf="suggestion.suggested_assignee_id">
+          <span class="label">Assignee ID:</span>
+          <span class="value">{{ suggestion.suggested_assignee_id }}</span>
+        </div>
+
+        <div class="suggestion-item full-width" *ngIf="suggestion.suggested_tags && suggestion.suggested_tags.length > 0">
+          <span class="label">Tags:</span>
+          <div class="tags-container">
+            <span class="tag" *ngFor="let tag of suggestion.suggested_tags">#{{ tag }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reasoning-section">
+      <h4>AI Reasoning</h4>
+      <p class="reasoning-text">{{ suggestion.reasoning }}</p>
+    </div>
+
+    <div class="panel-actions">
+      <button class="btn btn-reject" (click)="onReject()">
+        ✕ Reject
+      </button>
+      <button class="btn btn-accept" (click)="onAccept()">
+        ✓ Accept Suggestion
+      </button>
+    </div>
+  </div>
+</div>
