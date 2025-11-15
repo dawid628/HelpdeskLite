@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
 use App\Services\TicketService;
+use http\Client\Response;
+use HttpResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
@@ -19,13 +22,31 @@ class TicketController extends Controller
     /**
      * Get list of all tickets
      *
+     * @param Request $request
      * @return JsonResponse
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $tickets = $this->ticketService->getAllTickets();
+        $filters = $request->only(['status', 'priority', 'assignee_id', 'tags', 'reporter_id']);
+        $tickets = $this->ticketService->getAllTickets($filters);
 
         return response()->json(['data' => $tickets]);
+    }
+
+    /**
+     * Get single ticket
+     *
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function show(int $id): JsonResponse
+    {
+        try {
+            $ticket = $this->ticketService->getTicket($id);
+            return response()->json(['data' => $ticket]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
     }
 
     /**
@@ -62,5 +83,25 @@ class TicketController extends Controller
             'status' => 'success',
             'data' => $ticket
         ]);
+    }
+
+    /**
+     * Delete ticket
+     *
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->ticketService->deleteTicket($id);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Ticket deleted succesfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
     }
 }

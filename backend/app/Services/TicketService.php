@@ -23,11 +23,23 @@ readonly class TicketService
     /**
      * Get all tickets with relationships
      *
+     * @param array $filters
      * @return Collection
      */
-    public function getAllTickets(): Collection
+    public function getAllTickets(array $filters = []): Collection
     {
-        return $this->ticketRepository->getAll();
+        return $this->ticketRepository->getAll($filters);
+    }
+
+    /**
+     * Get single ticket
+     *
+     * @param int $ticketId
+     * @return Ticket
+     */
+    public function getTicket(int $ticketId): Ticket
+    {
+        return $this->ticketRepository->findOrFail($ticketId);
     }
 
     /**
@@ -70,5 +82,17 @@ readonly class TicketService
         ]);
 
         return $updatedTicket;
+    }
+
+    /**
+     * Delete ticket
+     *
+     * @param int $ticketId
+     * @return bool
+     */
+    public function deleteTicket(int $ticketId): bool
+    {
+        $ticket = $this->ticketRepository->findOrFail($ticketId);
+        return $this->ticketRepository->delete($ticket);
     }
 }

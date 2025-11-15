@@ -15,13 +15,36 @@ class TicketRepository
     /**
      * Get all tickets with relationships
      *
+     * @param array $filters
      * @return Collection
      */
-    public function getAll(): Collection
+    public function getAll(array $filters = []): Collection
     {
-        return Ticket::with(['assignee', 'reporter', 'statusChanges'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = Ticket::with(['assignee', 'reporter', 'statusChanges']);
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (isset($filters['priority'])) {
+            $query->where('priority', $filters['priority']);
+        }
+
+        if (isset($filters['assignee_id'])) {
+            $query->where('assignee_id', $filters['assignee_id']);
+        }
+
+        if (isset($filters['tags']) && is_array($filters['tags'])) {
+            foreach ($filters['tags'] as $tag) {
+                $query->whereJsonContains('tags', $tag);
+            }
+        }
+
+        // dla konkretnego zglaszajacego
+//        if(isset($filters['reporter_id'])) {
+//
+//        }
+
+        return $query->orderBy('created_at', 'desc')->get();
     }
 
     /**
@@ -33,7 +56,7 @@ class TicketRepository
      */
     public function findOrFail(int $id): Ticket
     {
-        return Ticket::with(['assignee', 'reporter', 'statusChanges'])
+        return Ticket::with(['assignee', 'reporter', 'statusChanges.user'])
             ->findOrFail($id);
     }
 
@@ -59,7 +82,18 @@ class TicketRepository
     {
         $ticket->update($data);
 
-        return $ticket->fresh(['assignee', 'reporter', 'statusChanges']);
+        return $ticket->fresh(['assignee', 'reporter', 'statusChanges.user']);
+    }
+
+    /**
+     * Delete ticket
+     *
+     * @param Ticket $ticket Ticket instance
+     * @return bool
+     */
+    public function delete(Ticket $ticket): bool
+    {
+        return $ticket->delete();
     }
 
     /**

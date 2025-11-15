@@ -12,6 +12,8 @@ Route::get('/test', function (Request $request) {
 
 Route::middleware(['auth:sanctum'])->prefix('tickets')->group(function () {
     Route::get('/', [TicketController::class, 'index'])->name('tickets.index');
+    Route::get('/{id}', [TicketController::class, 'show'])->name('tickets.show');
     Route::post('/', [TicketController::class, 'store'])->name('tickets.store');
-    Route::post('/{id}', [TicketController::class, 'update'])->name('tickets.update');
+    Route::put('/{id}', [TicketController::class, 'update'])->name('tickets.update');
+    Route::delete('/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy');
 });
