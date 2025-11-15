@@ -1,0 +1,33 @@
+<header class="app-header">
+  <div class="header-content">
+    <div class="header-left">
+      <h1 class="logo" (click)="goToTickets()">🎫 Ticket System</h1>
+    </div>
+
+    <div class="header-right">
+      <div class="user-info" *ngIf="authService.isAuthenticated()">
+        <div class="user-avatar">
+          {{ getUserInitials() }}
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ authService.currentUser()?.name }}</span>
+          <span class="user-role">{{ getUserRole() }}</span>
+        </div>
+      </div>
+
+      <button
+        class="btn btn-logout"
+        *ngIf="authService.isAuthenticated()"
+        (click)="logout()">
+        🚪 Logout
+      </button>
+
+      <button
+        class="btn btn-login"
+        *ngIf="!authService.isAuthenticated()"
+        (click)="goToLogin()">
+        🔐 Login
+      </button>
+    </div>
+  </div>
+</header>

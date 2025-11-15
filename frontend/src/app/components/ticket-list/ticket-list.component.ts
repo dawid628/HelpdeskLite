@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TicketService } from '../../services/ticket.service';
 import { TicketItemComponent } from '../ticket-item/ticket-item.component';
 import { TicketFormComponent } from '../ticket-form/ticket-form.component';
+import { HeaderComponent } from '../header/header.component';
 import { StatusEnum, PriorityEnum } from '../../models/enums';
 
 /**
@@ -11,7 +12,7 @@ import { StatusEnum, PriorityEnum } from '../../models/enums';
 @Component({
   selector: 'app-ticket-list',
   standalone: true,
-  imports: [CommonModule, TicketItemComponent, TicketFormComponent],
+  imports: [CommonModule, TicketItemComponent, TicketFormComponent, HeaderComponent],
   templateUrl: './ticket-list.component.html',
   styleUrls: ['./ticket-list.component.css']
 })
@@ -88,7 +89,7 @@ export class TicketListComponent implements OnInit {
   }
 
   /**
-   * Get tickets (no filtering on client side)
+   * Get tickets
    */
   get tickets() {
     return this.ticketService.tickets();

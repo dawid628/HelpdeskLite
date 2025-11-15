@@ -1,20 +1,25 @@
+<app-header></app-header>
+
 <div class="ticket-list-container">
   <header class="header">
-    <h1>Ticket Management System</h1>
+    <h1>Ticket Management</h1>
     <button class="btn btn-primary" (click)="toggleForm()">
       {{ showForm() ? 'Cancel' : 'Create New Ticket' }}
     </button>
   </header>
 
+  <!-- Error message -->
   <div class="error" *ngIf="ticketService.error()">
     <p>❌ {{ ticketService.error() }}</p>
   </div>
 
+  <!-- Create form -->
   <app-ticket-form
     *ngIf="showForm()"
     (close)="onFormClose()">
   </app-ticket-form>
 
+  <!-- Filters -->
   <div class="filters-container">
     <div class="filter-section">
       <h3>Status</h3>
@@ -90,11 +95,13 @@
     </button>
   </div>
 
+  <!-- Loading state -->
   <div class="loading" *ngIf="ticketService.loading()">
     <div class="spinner"></div>
     <p>Loading tickets...</p>
   </div>
 
+  <!-- Tickets list -->
   <div class="tickets-grid" *ngIf="!ticketService.loading()">
     <app-ticket-item
       *ngFor="let ticket of tickets"
@@ -102,6 +109,7 @@
     </app-ticket-item>
   </div>
 
+  <!-- Empty state -->
   <div class="empty-state" *ngIf="!ticketService.loading() && tickets.length === 0">
     <p>📭 No tickets found</p>
   </div>

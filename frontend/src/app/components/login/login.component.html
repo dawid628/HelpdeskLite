@@ -1,0 +1,46 @@
+<app-header></app-header>
+
+<div class="login-container">
+  <div class="login-card">
+    <h2>🔐 Login</h2>
+
+    <div class="error" *ngIf="error()">
+      {{ error() }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          [value]="email()"
+          (input)="email.set($any($event.target).value)"
+          required
+          placeholder="admin@example.com">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          [value]="password()"
+          (input)="password.set($any($event.target).value)"
+          required
+          placeholder="password">
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="loading()">
+        {{ loading() ? 'Logging in...' : 'Login' }}
+      </button>
+    </form>
+
+    <div class="demo-credentials">
+      <p><strong>Demo credentials:</strong></p>
+      <p>Admin: admin@example.com / password</p>
+      <p>Agent: agent1@example.com / password</p>
+      <p>Reporter: reporter1@example.com / password</p>
+    </div>
+  </div>
+</div>
