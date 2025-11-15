@@ -7,6 +7,7 @@ import {
   UpdateTicketStatusDto,
   ApiResponse
 } from '../models/ticket.model';
+import { AuthService } from './auth.service';
 
 /**
  * Service for managing tickets via API
@@ -16,17 +17,28 @@ import {
 })
 export class TicketService {
   private readonly apiUrl = 'http://localhost:8000/api/tickets';
-  private readonly headers = new HttpHeaders({
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  });
 
   // Signal for reactive tickets list
   tickets = signal<Ticket[]>([]);
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
+
+  /**
+   * Get auth headers with token
+   */
+  private getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
+  }
 
   /**
    * Get all tickets with optional filters
@@ -45,7 +57,7 @@ export class TicketService {
     }
 
     return this.http.get<ApiResponse<Ticket[]>>(this.apiUrl, {
-      headers: this.headers,
+      headers: this.getHeaders(),
       params
     }).pipe(
       tap({
@@ -68,16 +80,17 @@ export class TicketService {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.get<ApiResponse<Ticket>>(`${this.apiUrl}/${id}`, { headers: this.headers })
-      .pipe(
-        tap({
-          next: () => this.loading.set(false),
-          error: (err) => {
-            this.error.set(err.message);
-            this.loading.set(false);
-          }
-        })
-      );
+    return this.http.get<ApiResponse<Ticket>>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap({
+        next: () => this.loading.set(false),
+        error: (err) => {
+          this.error.set(err.message);
+          this.loading.set(false);
+        }
+      })
+    );
   }
 
   /**
@@ -87,21 +100,22 @@ export class TicketService {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.post<ApiResponse<Ticket>>(this.apiUrl, ticket, { headers: this.headers })
-      .pipe(
-        tap({
-          next: (response) => {
-            if (response.data) {
-              this.tickets.update(tickets => [...tickets, response.data!]);
-            }
-            this.loading.set(false);
-          },
-          error: (err) => {
-            this.error.set(err.message);
-            this.loading.set(false);
+    return this.http.post<ApiResponse<Ticket>>(this.apiUrl, ticket, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap({
+        next: (response) => {
+          if (response.data) {
+            this.tickets.update(tickets => [...tickets, response.data!]);
           }
-        })
-      );
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set(err.message);
+          this.loading.set(false);
+        }
+      })
+    );
   }
 
   /**
@@ -114,7 +128,7 @@ export class TicketService {
     return this.http.patch<ApiResponse<Ticket>>(
       `${this.apiUrl}/${id}`,
       data,
-      { headers: this.headers }
+      { headers: this.getHeaders() }
     ).pipe(
       tap({
         next: (response) => {
@@ -140,18 +154,19 @@ export class TicketService {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.headers })
-      .pipe(
-        tap({
-          next: () => {
-            this.tickets.update(tickets => tickets.filter(t => t.id !== id));
-            this.loading.set(false);
-          },
-          error: (err) => {
-            this.error.set(err.message);
-            this.loading.set(false);
-          }
-        })
-      );
+    return this.http.delete(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap({
+        next: () => {
+          this.tickets.update(tickets => tickets.filter(t => t.id !== id));
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set(err.message);
+          this.loading.set(false);
+        }
+      })
+    );
   }
 }
