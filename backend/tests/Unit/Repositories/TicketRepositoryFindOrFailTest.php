@@ -19,7 +19,7 @@ class TicketRepositoryFindOrFailTest extends TestCase
     #[Test]
     public function it_finds_ticket_or_fails(): void
     {
-        $repository = new TicketRepository();
+        $repository = new TicketRepository(new Ticket());
 
         $reporter = User::factory()->create();
         $assignee = User::factory()->create();

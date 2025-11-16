@@ -18,7 +18,7 @@ class TicketRepositoryCreateTest extends TestCase
     #[Test]
     public function it_creates_a_ticket(): void
     {
-        $repository = new TicketRepository();
+        $repository = new TicketRepository(new Ticket());
 
         $reporter = User::factory()->create();
         $assignee = User::factory()->create();

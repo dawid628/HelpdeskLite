@@ -19,7 +19,7 @@ class TicketRepositoryGetAllTagsTest extends TestCase
     #[Test]
     public function it_returns_all_unique_tags(): void
     {
-        $repository = new TicketRepository();
+        $repository = new TicketRepository(new Ticket());
 
         $reporter = User::factory()->create();
         $assignee = User::factory()->create();
