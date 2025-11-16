@@ -29,7 +29,13 @@ export class TicketService {
     if (filters) {
       Object.keys(filters).forEach(key => {
         if (filters[key] !== null && filters[key] !== undefined) {
-          params = params.set(key, filters[key].toString());
+          if (Array.isArray(filters[key])) {
+            filters[key].forEach((value: any) => {
+              params = params.append(`${key}[]`, value.toString());
+            });
+          } else {
+            params = params.set(key, filters[key].toString());
+          }
         }
       });
     }
@@ -134,5 +140,9 @@ export class TicketService {
       assignee_id: suggestion.suggested_assignee_id,
       tags: suggestion.suggested_tags
     });
+  }
+
+  getTags(): Observable<ApiResponse<string[]>> {
+    return this.http.get<ApiResponse<string[]>>(`${this.apiUrl}/tags/`);
   }
 }

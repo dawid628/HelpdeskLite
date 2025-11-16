@@ -1,5 +1,5 @@
 <app-header></app-header>
-
+<app-weather-banner></app-weather-banner>
 <div class="ticket-list-container">
   <header class="header">
     <h1>Ticket Management</h1>
@@ -21,6 +21,7 @@
 
   <!-- Filters -->
   <div class="filters-container">
+    <!-- Status Filter -->
     <div class="filter-section">
       <h3>Status</h3>
       <div class="filters">
@@ -51,6 +52,7 @@
       </div>
     </div>
 
+    <!-- Priority Filter -->
     <div class="filter-section">
       <h3>Priority</h3>
       <div class="filters">
@@ -87,11 +89,50 @@
       </div>
     </div>
 
+    <!-- Assignee Filter -->
+    <div class="filter-section">
+      <h3>Assignee</h3>
+      <div class="filters">
+        <button
+          class="filter-btn"
+          [class.active]="filterAssignee() === null"
+          (click)="setAssigneeFilter(null)">
+          All
+        </button>
+        <button
+          class="filter-btn"
+          *ngFor="let user of availableUsers()"
+          [class.active]="filterAssignee() === user.id"
+          (click)="setAssigneeFilter(user.id)">
+          {{ user.name }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Tags Filter (Text Input) -->
+    <div class="filter-section">
+      <h3>Tags</h3>
+      <div class="tags-input-container">
+        <input
+          type="text"
+          class="tags-input"
+          placeholder="Enter tags separated by commas (e.g., bug, ui, feature)"
+          [(ngModel)]="filterTags"
+          (input)="onTagsInput()"
+        />
+        <div class="tags-hint" *ngIf="availableTags().length > 0">
+          <span class="hint-label">Available tags:</span>
+          <span class="hint-tags">{{ availableTags().join(', ') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clear Filters Button -->
     <button
       class="btn btn-secondary clear-filters-btn"
-      *ngIf="filterStatus() !== null || filterPriority() !== null"
+      *ngIf="hasActiveFilters()"
       (click)="clearFilters()">
-      Clear Filters
+      🔄 Clear All Filters
     </button>
   </div>
 
@@ -112,5 +153,6 @@
   <!-- Empty state -->
   <div class="empty-state" *ngIf="!ticketService.loading() && tickets.length === 0">
     <p>📭 No tickets found</p>
+    <p class="empty-hint" *ngIf="hasActiveFilters()">Try adjusting your filters</p>
   </div>
 </div>

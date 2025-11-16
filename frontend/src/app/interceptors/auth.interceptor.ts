@@ -9,7 +9,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = authService.getToken();
 
-  if (token) {
+  const publicUrls = [
+    '/login',
+    '/logout',
+    'weatherapi.com',
+    'api.weatherapi.com'
+  ];
+
+  const isPublicUrl = publicUrls.some(url => req.url.includes(url));
+
+  if (token && !isPublicUrl && req.url.includes('localhost:8000')) {
     req = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -19,7 +28,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
+      if (error.status === 401 &&
+        !isPublicUrl &&
+        req.url.includes('localhost:8000')) {
         authService.logout();
         router.navigate(['/login']);
       }

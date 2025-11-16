@@ -1,0 +1,62 @@
+<div class="weather-banner" *ngIf="weatherService.currentWeather() || weatherService.loading() || weatherService.error()">
+  <!-- Loading state -->
+  <div class="weather-content" *ngIf="weatherService.loading()">
+    <div class="weather-loading">
+      <div class="loading-spinner"></div>
+      <span>Loading weather...</span>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div class="weather-content weather-error" *ngIf="weatherService.error() && !weatherService.loading()">
+    <span class="error-icon">⚠️</span>
+    <span class="error-text">{{ weatherService.error() }}</span>
+    <button class="refresh-btn" (click)="refreshWeather()">🔄 Retry</button>
+  </div>
+
+  <!-- Weather data -->
+  <div class="weather-content" *ngIf="weatherService.currentWeather() && !weatherService.loading() && !weatherService.error()">
+    <div class="weather-main">
+      <img
+        [src]="weatherService.currentWeather()!.icon"
+        [alt]="weatherService.currentWeather()!.condition"
+        class="weather-icon">
+
+      <div class="weather-temp">
+        <span class="temp-value">{{ weatherService.currentWeather()!.temperature }}°C</span>
+        <span class="temp-condition">{{ weatherService.currentWeather()!.condition }}</span>
+      </div>
+
+      <div class="weather-location">
+        <span class="location-icon">📍</span>
+        <span class="location-text">
+          {{ weatherService.currentWeather()!.location }}, {{ weatherService.currentWeather()!.country }}
+        </span>
+      </div>
+    </div>
+
+    <div class="weather-details">
+      <div class="detail-item">
+        <span class="detail-icon">🌡️</span>
+        <span class="detail-label">Feels like:</span>
+        <span class="detail-value">{{ weatherService.currentWeather()!.feels_like }}°C</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-icon">💧</span>
+        <span class="detail-label">Humidity:</span>
+        <span class="detail-value">{{ weatherService.currentWeather()!.humidity }}%</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-icon">💨</span>
+        <span class="detail-label">Wind:</span>
+        <span class="detail-value">{{ weatherService.currentWeather()!.wind_kph }} km/h</span>
+      </div>
+    </div>
+
+    <button class="refresh-btn" (click)="refreshWeather()" title="Refresh weather">
+      🔄
+    </button>
+  </div>
+</div>
