@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\StatusEnum;
 use App\Models\Ticket;
 use App\Repositories\TicketRepository;
+use App\Repositories\TicketStatusChangeRepository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +17,11 @@ readonly class TicketService
 {
     /**
      * @param TicketRepository $ticketRepository
+     * @param TicketStatusChangeRepository $ticketStatusChangeRepository
      */
     public function __construct(
-        private TicketRepository $ticketRepository
+        private TicketRepository $ticketRepository,
+        private TicketStatusChangeRepository $ticketStatusChangeRepository
     ) {}
 
     /**
@@ -87,7 +90,7 @@ readonly class TicketService
             $afterStatus = StatusEnum::from($data['status']);
 
             if ($beforeStatus !== $afterStatus) {
-                $this->ticketRepository->createStatusChange([
+                $this->ticketStatusChangeRepository->createStatusChange([
                     'ticket_id' => $ticketId,
                     'user_id' => Auth::id(),
                     'before_status' => $beforeStatus,

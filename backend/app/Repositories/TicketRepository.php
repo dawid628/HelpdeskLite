@@ -3,9 +3,9 @@
 namespace App\Repositories;
 
 use App\Models\Ticket;
-use App\Models\TicketStatusChange;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
@@ -13,6 +13,13 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
  */
 class TicketRepository
 {
+    private Model $model;
+
+    public function __construct(Ticket $model)
+    {
+        $this->model = $model;
+    }
+
     /**
      * Get all tickets with relationships
      *
@@ -22,7 +29,7 @@ class TicketRepository
      */
     public function getAll(?User $user = null, array $filters = []): Collection
     {
-        $query = Ticket::with(['assignee.role', 'reporter.role', 'statusChanges.user']);
+        $query = $this->model->with(['assignee.role', 'reporter.role', 'statusChanges.user']);
 
         if ($user && $user->isReporter()) {
             $query->where('reporter_id', $user->id);
@@ -62,7 +69,7 @@ class TicketRepository
      */
     public function findOrFail(int $id): Ticket
     {
-        return Ticket::with(['assignee.role', 'reporter.role', 'statusChanges.user'])
+        return $this->model->with(['assignee.role', 'reporter.role', 'statusChanges.user'])
             ->findOrFail($id);
     }
 
@@ -74,7 +81,7 @@ class TicketRepository
      */
     public function create(array $data): Ticket
     {
-        return Ticket::create($data);
+        return $this->model->create($data);
     }
 
     /**
@@ -103,24 +110,13 @@ class TicketRepository
     }
 
     /**
-     * Create ticket status change entry
-     *
-     * @param array $data Status change data
-     * @return TicketStatusChange
-     */
-    public function createStatusChange(array $data): TicketStatusChange
-    {
-        return TicketStatusChange::create($data);
-    }
-
-    /**
      * Get all unique tags from all tickets
      *
      * @return array
      */
     public function getAllTags(): array
     {
-        $tickets = Ticket::whereNotNull('tags')->get();
+        $tickets = $this->model->whereNotNull('tags')->get();
         $allTags = [];
 
         foreach ($tickets as $ticket)
