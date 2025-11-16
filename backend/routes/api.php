@@ -21,6 +21,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::apiResource('tickets', TicketController::class);
     Route::post('/tickets/{id}/triage-suggest', [TicketController::class, 'triageSuggest']);
+    Route::get('/tickets/tags', [TicketController::class, 'tags']);
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index']);

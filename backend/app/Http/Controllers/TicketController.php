@@ -4,36 +4,53 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
-use App\Services\LLMTriageService;
 use App\Services\TicketService;
+use App\Services\LLMTriageService;
+use App\Repositories\TicketRepository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Controller for managing tickets
+ */
 class TicketController extends Controller
 {
     /**
      * @param TicketService $ticketService
      * @param LLMTriageService $triageService
+     * @param TicketRepository $ticketRepository
      */
     public function __construct(
         private readonly TicketService $ticketService,
-        private readonly LLMTriageService $triageService
+        private readonly LLMTriageService $triageService,
+        private readonly TicketRepository $ticketRepository
     ) {}
 
     /**
-     * Get list of all tickets
+     * Get list of all tickets with optional filters
      *
      * @param Request $request
      * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
-        $filters = $request->only(['status', 'priority', 'assignee_id', 'tags', 'reporter_id']);
+        $filters = $request->only(['status', 'priority', 'assignee_id', 'tags', 'tag', 'reporter_id']);
         $tickets = $this->ticketService->getAllTickets($filters);
 
         return response()->json(['data' => $tickets]);
+    }
+
+    /**
+     * Get all unique tags
+     *
+     * @return JsonResponse
+     */
+    public function tags(): JsonResponse
+    {
+        $tags = $this->ticketRepository->getAllTags();
+        return response()->json(['data' => $tags]);
     }
 
     /**
@@ -47,8 +64,10 @@ class TicketController extends Controller
         try {
             $ticket = $this->ticketService->getTicket($id);
             return response()->json(['data' => $ticket]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Ticket not found'], 404);
         }
     }
 
@@ -107,8 +126,10 @@ class TicketController extends Controller
                 'status' => 'success',
                 'message' => 'Ticket deleted successfully'
             ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Ticket not found'], 404);
         }
     }
 

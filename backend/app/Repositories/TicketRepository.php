@@ -112,4 +112,24 @@ class TicketRepository
     {
         return TicketStatusChange::create($data);
     }
+
+    /**
+     * Get all unique tags from all tickets
+     *
+     * @return array
+     */
+    public function getAllTags(): array
+    {
+        $tickets = Ticket::whereNotNull('tags')->get();
+        $allTags = [];
+
+        foreach ($tickets as $ticket)
+        {
+            if(is_array($ticket->tags)) {
+                $allTags = array_merge($allTags, $ticket->tags);
+            }
+        }
+
+        return array_values(array_unique($allTags));
+    }
 }

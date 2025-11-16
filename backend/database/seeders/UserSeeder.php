@@ -21,21 +21,21 @@ class UserSeeder extends Seeder
 
         User::firstOrCreate(
             ['email' => 'admin@admin.pl'],
-            ['name' => 'Admin user',
+            ['name' => 'Adminowy',
                 'password' => Hash::make('password'),
                 'role_id' => $adminRole->id]
         );
 
         User::firstOrCreate(
             ['email' => 'agent@admin.pl'],
-            ['name' => 'Agent user',
+            ['name' => 'Agencik',
                 'password' => Hash::make('password'),
                 'role_id' => $agentRole->id]
         );
 
         User::firstOrCreate(
             ['email' => 'reporter@admin.pl'],
-            ['name' => 'Reported user',
+            ['name' => 'Zgłaszacz',
                 'password' => Hash::make('password'),
                 'role_id' => $reporterRole->id]
         );
