@@ -1,0 +1,48 @@
+<div class="ticket-card" [class.loading]="loading" [class]="'variant-' + variant">
+  <!-- Loading skeleton -->
+  <div class="skeleton" *ngIf="loading">
+    <div class="skeleton-header"></div>
+    <div class="skeleton-text"></div>
+    <div class="skeleton-text short"></div>
+    <div class="skeleton-footer"></div>
+  </div>
+
+  <!-- Actual content -->
+  <div class="ticket-content" *ngIf="!loading">
+    <div class="ticket-header">
+      <h3 class="ticket-title">{{ ticket.title }}</h3>
+      <app-priority-badge
+        [priority]="ticket.priority"
+        [size]="variant === 'compact' ? 'small' : 'medium'">
+      </app-priority-badge>
+    </div>
+
+    <p class="ticket-description" *ngIf="variant !== 'compact'">
+      {{ truncateDescription(ticket.description, variant === 'detailed' ? 200 : 100) }}
+    </p>
+
+    <div class="ticket-meta" *ngIf="variant === 'detailed'">
+      <div class="meta-item">
+        <span class="meta-label">👤 Assignee:</span>
+        <span class="meta-value">{{ ticket.assignee?.name || 'Unassigned' }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">📝 Reporter:</span>
+        <span class="meta-value">{{ ticket.reporter?.name || 'Unknown' }}</span>
+      </div>
+    </div>
+
+    <div class="ticket-tags" *ngIf="ticket.tags && ticket.tags.length > 0">
+      <span class="tag" *ngFor="let tag of ticket.tags">#{{ tag }}</span>
+    </div>
+
+    <div class="ticket-footer">
+      <span
+        class="status-badge"
+        [style.background-color]="getStatusColor(ticket.status)">
+        {{ getStatusLabel(ticket.status) }}
+      </span>
+      <span class="ticket-date">📅 {{ ticket.created_at | date:'short' }}</span>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,5 @@
-import { PriorityEnum, StatusEnum } from './enums';
 import { User } from './user.model';
+import { PriorityEnum, StatusEnum } from './enums';
 
 export interface TicketStatusChange {
   id: number;
@@ -18,13 +18,13 @@ export interface Ticket {
   description: string;
   priority: PriorityEnum;
   status: StatusEnum;
-  assignee_id: number;
+  assignee_id?: number | null;
+  assignee?: User;
   reporter_id: number;
-  tags: string[];
+  reporter?: User;
+  tags?: string[];
   created_at: string;
   updated_at: string;
-  assignee?: User;
-  reporter?: User;
   statusChanges?: TicketStatusChange[];
 }
 
@@ -32,12 +32,12 @@ export interface CreateTicketDto {
   title: string;
   description: string;
   priority: PriorityEnum;
-  assignee_id: number;
+  assignee_id?: number | null;
   tags?: string[];
 }
 
 export interface UpdateTicketStatusDto {
-  status: StatusEnum;
+  status?: StatusEnum;
 }
 
 export interface ApiResponse<T> {

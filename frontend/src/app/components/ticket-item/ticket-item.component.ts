@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Ticket } from '../../models/ticket.model';
-import {TriageSuggestion} from '../../models/triage.model';
+import { TriageSuggestion } from '../../models/triage.model';
 import {
   StatusEnum,
   PriorityEnum,
@@ -13,7 +13,8 @@ import {
 } from '../../models/enums';
 import { TicketService } from '../../services/ticket.service';
 import { AuthService } from '../../services/auth.service';
-import { TriageSuggestionPanelComponent } from '../triage-suggestion-panel/triage-suggestion-panel.component';
+import { PriorityBadgeComponent } from '../priority-badge/priority-badge.component';
+import { TriagePanelComponent } from '../triage-panel/triage-panel.component';
 
 /**
  * Component displaying single ticket card
@@ -21,7 +22,7 @@ import { TriageSuggestionPanelComponent } from '../triage-suggestion-panel/triag
 @Component({
   selector: 'app-ticket-item',
   standalone: true,
-  imports: [CommonModule, FormsModule, TriageSuggestionPanelComponent],
+  imports: [CommonModule, FormsModule, PriorityBadgeComponent, TriagePanelComponent],
   templateUrl: './ticket-item.component.html',
   styleUrls: ['./ticket-item.component.css']
 })
@@ -37,6 +38,7 @@ export class TicketItemComponent implements OnInit {
   triageSuggestion: TriageSuggestion | null = null;
   triageLoading = false;
   triageError: string | null = null;
+  applyingTriage = false;
 
   constructor(
     private ticketService: TicketService,
@@ -75,9 +77,6 @@ export class TicketItemComponent implements OnInit {
     return user.role.name === 'admin';
   }
 
-  /**
-   * Can use triage assistant (agents and admins)
-   */
   canUseTriage(): boolean {
     return this.canUpdateTicket();
   }
@@ -113,9 +112,6 @@ export class TicketItemComponent implements OnInit {
     }
   }
 
-  /**
-   * Request AI triage suggestion
-   */
   requestTriage(): void {
     this.showTriage = true;
     this.triageLoading = true;
@@ -134,34 +130,27 @@ export class TicketItemComponent implements OnInit {
     });
   }
 
-  /**
-   * Accept triage suggestion
-   */
   acceptTriage(suggestion: TriageSuggestion): void {
+    this.applyingTriage = true;
+
     this.ticketService.applyTriageSuggestion(this.ticket.id, suggestion).subscribe({
       next: () => {
+        this.applyingTriage = false;
         this.showTriage = false;
         this.triageSuggestion = null;
-        // Reload tickets to see updated data
-        window.location.reload();
       },
       error: (err) => {
+        this.applyingTriage = false;
         alert(err.error?.error || 'Failed to apply triage suggestion');
       }
     });
   }
 
-  /**
-   * Reject triage suggestion
-   */
   rejectTriage(): void {
     this.showTriage = false;
     this.triageSuggestion = null;
   }
 
-  /**
-   * Close triage panel
-   */
   closeTriage(): void {
     this.showTriage = false;
     this.triageSuggestion = null;

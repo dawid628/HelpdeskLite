@@ -2,11 +2,10 @@
   <div class="ticket-header">
     <h3 class="ticket-title">{{ ticket.title }}</h3>
     <div class="header-actions">
-      <span
-        class="priority-badge"
-        [style.background-color]="getPriorityColor(ticket.priority)">
-        {{ getPriorityLabel(ticket.priority) }}
-      </span>
+      <app-priority-badge
+        [priority]="ticket.priority"
+        size="medium">
+      </app-priority-badge>
       <button
         class="delete-btn"
         *ngIf="canDeleteTicket()"
@@ -32,15 +31,18 @@
     <span class="tag" *ngFor="let tag of ticket.tags">#{{ tag }}</span>
   </div>
 
-  <app-triage-suggestion-panel
+  <app-triage-panel
     *ngIf="showTriage"
-    [suggestion]="triageSuggestion"
-    [loading]="triageLoading"
+    [suggestedPriority]="triageSuggestion?.suggested_priority || null"
+    [suggestedStatus]="triageSuggestion?.suggested_status || null"
+    [suggestedTags]="triageSuggestion?.suggested_tags || []"
+    [reasoning]="triageSuggestion?.reasoning || ''"
+    [loading]="triageLoading || applyingTriage"
     [error]="triageError"
-    (accept)="acceptTriage($event)"
+    (accept)="acceptTriage(triageSuggestion!)"
     (reject)="rejectTriage()"
     (close)="closeTriage()">
-  </app-triage-suggestion-panel>
+  </app-triage-panel>
 
   <div class="ticket-footer">
     <div class="status-section">
@@ -59,7 +61,6 @@
     <span class="ticket-date">📅 {{ ticket.created_at | date:'short' }}</span>
   </div>
 
-  <!-- Actions -->
   <div class="ticket-actions">
     <button
       class="btn btn-triage"
@@ -69,7 +70,6 @@
     </button>
   </div>
 
-  <!-- Permission indicator -->
   <div class="permission-info" *ngIf="!canUpdateTicket()">
     <small>👁️ View only</small>
   </div>

@@ -1,0 +1,71 @@
+<div class="triage-panel">
+  <div class="panel-header">
+    <div class="header-left">
+      <span class="ai-icon">🤖</span>
+      <h3>AI Triage Suggestion</h3>
+    </div>
+    <button class="close-btn" (click)="onClose()" title="Close">×</button>
+  </div>
+
+  <div class="panel-content">
+    <!-- Loading state -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Analyzing ticket...</p>
+    </div>
+
+    <!-- Error state -->
+    <div class="error-state" *ngIf="error && !loading">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+    </div>
+
+    <!-- Suggestion content -->
+    <div class="suggestion-content" *ngIf="!loading && !error">
+      <div class="suggestion-section">
+        <h4>Suggested Changes</h4>
+
+        <div class="suggestion-grid">
+          <div class="suggestion-item">
+            <span class="label">Priority:</span>
+            <span
+              class="priority-badge"
+              [style.background-color]="getPriorityColor(suggestedPriority)">
+              {{ getPriorityLabel(suggestedPriority) }}
+            </span>
+          </div>
+
+          <div class="suggestion-item">
+            <span class="label">Status:</span>
+            <span
+              class="status-badge"
+              [style.background-color]="getStatusColor(suggestedStatus)">
+              {{ getStatusLabel(suggestedStatus) }}
+            </span>
+          </div>
+
+          <div class="suggestion-item full-width" *ngIf="suggestedTags.length > 0">
+            <span class="label">Tags:</span>
+            <div class="tags-container">
+              <span class="tag" *ngFor="let tag of suggestedTags">#{{ tag }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reasoning-section" *ngIf="reasoning">
+        <h4>AI Reasoning</h4>
+        <p class="reasoning-text">{{ reasoning }}</p>
+      </div>
+
+      <div class="panel-actions">
+        <button class="btn btn-reject" (click)="onReject()">
+          ✕ Reject
+        </button>
+        <button class="btn btn-accept" (click)="onAccept()">
+          ✓ Accept Suggestion
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
